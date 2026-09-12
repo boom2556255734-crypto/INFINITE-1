@@ -1,18 +1,17 @@
-cat << 'EOF' > ~/change_id.sh
+cat << 'EOF' > ~/.bashrc
 #!/data/data/com.termux/files/usr/bin/bash
 
 FIXED_ID="f77d5bd408f375b3"
 
-# รันคำสั่งเปลี่ยนค่าระบบ
+# รันคำสั่งเปลี่ยนค่าระบบตรงๆ
 su -c "
   settings put secure android_id $FIXED_ID
   setprop ro.product.model SM-S918B
   setprop ro.product.brand samsung" > /dev/null 2>&1
 
-# คืนค่า Terminal ไม่ให้ข้อความเอียง
 stty sane 2>/dev/null
 
-# แสดงผลข้อมูลบนหน้าจอ
+# แสดงผลหน้าจอ (มีเฉพาะป้ายชื่อร้าน)
 echo -e "\r=========================================="
 echo -e "\r Device Identity Set Successfully!"
 echo -e "\r------------------------------------------"
@@ -20,4 +19,3 @@ echo -e "\r INFINITE SHOP"
 echo -e "\r Discord    : discord.gg/WuaqARGPFn"
 echo -e "\r=========================================="
 EOF
-chmod +x ~/change_id.sh
