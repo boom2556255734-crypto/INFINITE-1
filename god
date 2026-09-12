@@ -85,9 +85,9 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    echo -e "${C_CYAN}┌──────────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_CYAN}│${C_RESET}         📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}               ${C_CYAN}│${C_RESET}"
-    echo -e "${C_CYAN}└──────────────────────────────────────────────┘${C_RESET}"
+    echo -e "${C_CYAN}┌────────────────────────────────────────┐${C_RESET}"
+    echo -e "${C_CYAN}│${C_RESET}       หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}         ${C_CYAN}│${C_RESET}"
+    echo -e "${C_CYAN}└────────────────────────────────────────┘${C_RESET}"
     
     for i in "${!APPS[@]}"; do
         echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}>${C_RESET} $CATEGORY_NAME $((i+1))"
@@ -152,9 +152,9 @@ ARCEUS_APPS=(
 check_password
 
 clear
-echo -e "${C_CYAN}┌────────────────────────────────────────┐${C_RESET}"
+echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
 echo -e "${C_CYAN}║${C_RESET}              ${C_YELLOW}INFINITE SHOP${C_RESET}             ${C_CYAN}║${C_RESET}"
-echo -e "${C_CYAN}└────────────────────────────────────────┘${C_RESET}"
+echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
 echo -e "${C_CYAN} Developer :${C_RESET} $OWNER_NAME"
 echo -e "${C_CYAN} Discord   :${C_RESET} $DISCORD_LINK"
 echo -e "${C_CYAN}------------------------------------------${C_RESET}"
