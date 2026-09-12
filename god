@@ -1,5 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
+# ==========================================
+# 1. ระบบจัดการแคชและล้างไฟล์เก่า (แก้บัคดาวน์โหลดไม่ไป/รันตัวเก่า)
+# ==========================================
+hash -r 2>/dev/null
+rm -f /sdcard/Download/temp_app.apk
+
 # กำหนดรหัสสีเพื่อความสวยงาม
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
@@ -18,13 +24,13 @@ MAX_ATTEMPTS=3
 
 check_password() {
     clear
-    echo -e "${C_CYAN}┌────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_CYAN}│${C_RESET}             ${C_YELLOW}INFINITE SHOP${C_RESET}              ${C_CYAN}│${C_RESET}"
-    echo -e "${C_CYAN}└────────────────────────────────────────┘${C_RESET}"
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-        echo -ne "${CR}${C_GREEN} กรอกรหัสผ่านระบบ: ${C_RESET}"
+        echo -ne "${CR}${C_GREEN}🔑 กรอกรหัสผ่านระบบ: ${C_RESET}"
         read -s USER_PASS
         echo ""
         
@@ -39,15 +45,15 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            echo -e "${C_GREEN} รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
+            echo -e "${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
             sleep 1
             return 0
         else
-            echo -e "${CR}${C_RED} รหัสผ่านไม่ถูกต้อง (เหลือโอกาสอีก $((MAX_ATTEMPTS - ATTEMPTS - 1)) ครั้ง)${C_RESET}"
+            echo -e "${CR}${C_RED}❌ รหัสผ่านไม่ถูกต้อง (เหลือโอกาสอีก $((MAX_ATTEMPTS - ATTEMPTS - 1)) ครั้ง)${C_RESET}"
             ATTEMPTS=$((ATTEMPTS + 1))
         fi
     done
-    echo -e "${CR}${C_RED} ใส่รหัสผิดเกินกำหนด ล็อกระบบชั่วคราว${C_RESET}"
+    echo -e "${CR}${C_RED}🚫 ใส่รหัสผิดเกินกำหนด ล็อกระบบชั่วคราว${C_RESET}"
     exit 1
 }
 
@@ -57,23 +63,25 @@ install_apk() {
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
 
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-    echo -e "${CR}${C_YELLOW} กำลังดาวน์โหลด:${C_RESET} $NAME"
+    echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด:${C_RESET} $NAME"
     
     rm -f "$TEMP_FILE"
-    curl -sL "$URL" -o "$TEMP_FILE"
+    
+    # 2. แก้บัคดาวน์โหลด โดยเพิ่ม User-Agent และลดปัญหา Cache
+    curl -sL -A "Mozilla/5.0" -H "Cache-Control: no-cache" "$URL" -o "$TEMP_FILE"
     local CURL_STATUS=$?
 
     if [ $CURL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
-            echo -e "${CR}${C_GREEN} กำลังติดตั้ง:${C_RESET} $NAME ..."
+            echo -e "${CR}${C_GREEN}⚡ กำลังติดตั้ง:${C_RESET} $NAME ..."
             termux-open "$TEMP_FILE"
-            echo -e "${CR}${C_GREEN} เปิดหน้าต่างติดตั้งสำเร็จ:${C_RESET} $NAME"
+            echo -e "${CR}${C_GREEN}✅ เปิดหน้าต่างติดตั้งสำเร็จ:${C_RESET} $NAME"
         else
-            echo -e "${CR}${C_RED} ไฟล์เสียหรือขนาดเล็กเกินไป${C_RESET}"
+            echo -e "${CR}${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
         fi
     else
-        echo -e "${CR}${C_RED} ดาวน์โหลดล้มเหลว (ตรวจสอบลิงก์)${C_RESET}"
+        echo -e "${CR}${C_RED}❌ ดาวน์โหลดล้มเหลว (ตรวจสอบอินเทอร์เน็ตหรือลิงก์)${C_RESET}"
     fi
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 }
@@ -85,19 +93,20 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    echo -e "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_CYAN}│${C_RESET}        หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          ${C_CYAN}│${C_RESET}"
-    echo -e "${C_CYAN}└──────────────────────────────────────────┘${C_RESET}"
+    # 3. แก้บัคกรอบเบี้ยวด้วยดีไซน์เส้นแนวนอน 100% สวยงามลงตัว
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
     
     for i in "${!APPS[@]}"; do
-        echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}>${C_RESET} $CATEGORY_NAME $((i+1))"
+        echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
     done
     
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-    echo -e "${CR}${C_YELLOW} คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
+    echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 
-    echo -ne "${CR}${C_GREEN} เลือกรายการที่ต้องการ: ${C_RESET}"
+    echo -ne "${CR}${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
     read INPUT_CHOICE
     echo ""
 
@@ -122,9 +131,9 @@ process_selection() {
     fi
 
     clear
-    echo -e "${C_CYAN}┌────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_CYAN}│${C_RESET}          ${C_GREEN}กำลังดำเนินการติดตั้ง${C_RESET}          ${C_CYAN}│${C_RESET}"
-    echo -e "${C_CYAN}└────────────────────────────────────────┘${C_RESET}"
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
 
     for INDEX in "${SELECTED_INDICES[@]}"; do
         if [ $INDEX -ge 0 ] && [ $INDEX -lt $TOTAL ]; then
@@ -152,16 +161,16 @@ ARCEUS_APPS=(
 check_password
 
 clear
-echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-echo -e "${C_CYAN}║${C_RESET}              ${C_YELLOW}INFINITE SHOP${C_RESET}             ${C_CYAN}║${C_RESET}"
-echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
-echo -e "${C_CYAN} Developer :${C_RESET} $OWNER_NAME"
-echo -e "${C_CYAN} Discord   :${C_RESET} $DISCORD_LINK"
+echo -e "${C_CYAN}==========================================${C_RESET}"
+echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+echo -e "${C_CYAN}==========================================${C_RESET}"
+echo -e "${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
+echo -e "${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
 echo -e "${C_CYAN}------------------------------------------${C_RESET}"
 echo -e "${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
 echo -e "${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
 echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -ne "${C_GREEN} เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
+echo -ne "${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
 read MAIN_CHOICE
 echo ""
 
@@ -179,5 +188,5 @@ esac
 
 echo -e "${C_CYAN}"
 echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "           ${C_GREEN}ทำงานเสร็จสิ้นเรียบร้อย!${C_RESET}          "
+echo -e "         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
 echo -e "${C_CYAN}------------------------------------------${C_RESET}"
