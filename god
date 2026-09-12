@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# กำหนดรหัสสีและลูกเล่นอนิเมชั่น
+# กำหนดรหัสสีเพื่อความสวยงาม
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
 C_GREEN="\033[1;32m"
@@ -15,21 +15,6 @@ DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 
 VALID_PASSWORDS=("1688" "BIG49")
 MAX_ATTEMPTS=3
-
-# ฟังก์ชันแสดงอนิเมชั่นรอ (Spinner)
-spinner() {
-    local pid=$1
-    local delay=0.1
-    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    while [ "$(ps a | awk '{print $1}' | grep -w $pid)" ]; do
-        for (( i=0; i<${#spinstr}; i++ )); do
-            local char="${spinstr:$i:1}"
-            echo -ne "${CR}${C_CYAN}[$char]${C_RESET} กำลังประมวลผล..."
-            sleep $delay
-        done
-    done
-    echo -ne "${CR}"
-}
 
 check_password() {
     clear
@@ -75,12 +60,10 @@ install_apk() {
     echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด:${C_RESET} $NAME"
     
     rm -f "$TEMP_FILE"
-    curl -sL "$URL" -o "$TEMP_FILE" &
-    spinner $!
-
+    curl -sL "$URL" -o "$TEMP_FILE"
     local CURL_STATUS=$?
 
-    if [ -f "$TEMP_FILE" ]; then
+    if [ $CURL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
             echo -e "${CR}${C_GREEN}⚡ กำลังติดตั้ง:${C_RESET} $NAME ..."
