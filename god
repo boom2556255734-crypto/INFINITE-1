@@ -85,19 +85,19 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    echo -e "${C_CYAN}+----------------------------------------+${C_RESET}"
-    echo -e "${C_CYAN}|${C_RESET}          📂 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          ${C_CYAN}|${C_RESET}"
-    echo -e "${C_CYAN}+----------------------------------------+${C_RESET}"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+    echo -e "${C_CYAN}|${C_RESET}       หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}       ${C_CYAN}|${C_RESET}"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
     
     for i in "${!APPS[@]}"; do
         echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} $CATEGORY_NAME $((i+1))"
     done
     
-    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-    echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
-    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+    echo -e "${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
 
-    echo -ne "${CR}${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
+    echo -ne "${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
     read INPUT_CHOICE
     echo ""
 
@@ -122,9 +122,9 @@ process_selection() {
     fi
 
     clear
-    echo -e "${C_CYAN}+----------------------------------------+${C_RESET}"
-    echo -e "${C_CYAN}|${C_RESET}       ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}        ${C_CYAN}|${C_RESET}"
-    echo -e "${C_CYAN}+----------------------------------------+${C_RESET}"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+    echo -e "${C_CYAN}|${C_RESET}         ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}         ${C_CYAN}|${C_RESET}"
+    echo -e "${C_CYAN}------------------------------------------${C_RESET}"
 
     for INDEX in "${SELECTED_INDICES[@]}"; do
         if [ $INDEX -ge 0 ] && [ $INDEX -lt $TOTAL ]; then
