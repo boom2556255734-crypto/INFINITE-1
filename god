@@ -1,10 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# 1. ระบบจัดการแคชและล้างไฟล์เก่า (แก้บัคดาวน์โหลดไม่ไป/รันตัวเก่า)
+# ล้างแคชและป้องกันการรันสคริปต์เก่า
 # ==========================================
 hash -r 2>/dev/null
-rm -f /sdcard/Download/temp_app.apk
 
 # กำหนดรหัสสีเพื่อความสวยงาม
 C_RESET="\033[0m"
@@ -60,18 +59,24 @@ check_password() {
 install_apk() {
     local NAME=$1
     local URL=$2
-    local TEMP_FILE="/sdcard/Download/temp_app.apk"
+    # เปลี่ยนมาบันทึกในโฟลเดอร์หลักของ Termux แก้ปัญหาติดสิทธิ์ Storage (Permission Denied)
+    local TEMP_FILE="$HOME/temp_app.apk"
 
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
     echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด:${C_RESET} $NAME"
     
     rm -f "$TEMP_FILE"
     
-    # 2. แก้บัคดาวน์โหลด โดยเพิ่ม User-Agent และลดปัญหา Cache
-    curl -sL -A "Mozilla/5.0" -H "Cache-Control: no-cache" "$URL" -o "$TEMP_FILE"
-    local CURL_STATUS=$?
+    # รันคำสั่งโหลดไฟล์ พร้อมดักจับสถานะ (ดักไว้ 2 ชั้น curl และ wget)
+    if curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE"; then
+        local DL_STATUS=0
+    else
+        # ถ้า curl ล้มเหลว ให้ใช้ wget เป็นแผนสำรอง
+        wget -qO "$TEMP_FILE" "$URL"
+        local DL_STATUS=$?
+    fi
 
-    if [ $CURL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
+    if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
             echo -e "${CR}${C_GREEN}⚡ กำลังติดตั้ง:${C_RESET} $NAME ..."
@@ -79,9 +84,11 @@ install_apk() {
             echo -e "${CR}${C_GREEN}✅ เปิดหน้าต่างติดตั้งสำเร็จ:${C_RESET} $NAME"
         else
             echo -e "${CR}${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
+            rm -f "$TEMP_FILE"
         fi
     else
-        echo -e "${CR}${C_RED}❌ ดาวน์โหลดล้มเหลว (ตรวจสอบอินเทอร์เน็ตหรือลิงก์)${C_RESET}"
+        # หากล้มเหลว จะโชว์ Error Code ให้รู้ว่าพังที่อะไร
+        echo -e "${CR}${C_RED}❌ ดาวน์โหลดล้มเหลว (Error Code: $DL_STATUS)${C_RESET}"
     fi
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 }
@@ -93,7 +100,6 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    # 3. แก้บัคกรอบเบี้ยวด้วยดีไซน์เส้นแนวนอน 100% สวยงามลงตัว
     echo -e "${C_CYAN}==========================================${C_RESET}"
     echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
     echo -e "${C_CYAN}==========================================${C_RESET}"
