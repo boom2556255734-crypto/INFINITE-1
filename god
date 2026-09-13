@@ -57,16 +57,20 @@ get_device_info() {
     OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "?")
     ARCH=$(uname -m 2>/dev/null || echo "?")
     
-    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
+    local RAM_KB
+    RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
     if [ -n "$RAM_KB" ]; then
-        local mem_val=$(echo "$RAM_KB" | awk '{print $2}')
+        local mem_val
+        mem_val=$(echo "$RAM_KB" | awk '{print $2}')
         RAM_GB=$(awk "BEGIN {printf \"%.1f\", $mem_val/1048576}" 2>/dev/null)" GB"
     else
         RAM_GB="?"
     fi
     
-    local ROM_TOTAL=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $2}')
-    local ROM_FREE=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $4}')
+    local ROM_TOTAL
+    ROM_TOTAL=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $2}')
+    local ROM_FREE
+    ROM_FREE=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $4}')
     if [ -n "$ROM_TOTAL" ]; then
         ROM_INFO="${ROM_TOTAL} (ว่าง ${ROM_FREE})"
     else
@@ -111,40 +115,40 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (เปลี่ยนสปินเนอร์เป็นแบบ ASCII รองรับทุกเครื่อง)
+# 3. ระบบติดตั้งแอป (ปลอดภัย ไร้อักขระพิเศษ)
 # ==========================================
 install_apk() {
-    local NAME=$1
-    local URL=$2
+    local NAME="$1"
+    local URL="$2"
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
+    local PID=""
+    local DL_STATUS=0
 
     echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
     rm -f "$TEMP_FILE"
     
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
-    local PID=$!
+    PID=$!
     
-    # ใช้สปินเนอร์แบบขีดหมุน ASCII ป้องกันอักษรเพี้ยน 100%
-    local SPINNER=("/" "-" "\" "|")
-    local i=0
+    local DOTS=""
     while kill -0 $PID 2>/dev/null; do
-        i=$(( (i+1) % 4 ))
-        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${SPINNER[$i]}]${C_RESET}"
-        sleep 0.1
+        if [ ${#DOTS} -ge 3 ]; then DOTS=""; else DOTS+="."; fi
+        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}${DOTS}${C_RESET}"
+        sleep 0.4
     done
     wait $PID
-    local DL_STATUS=$?
+    DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
-        local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
+        local FILE_SIZE
+        FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
             chmod 777 "$TEMP_FILE" 2>/dev/null
             
             echo -e "${CR} ${C_GREEN}⚡ กำลังเปิดหน้าต่างติดตั้ง:${C_RESET} $NAME ..."
             
-            # ตรวจสอบสิทธิ์ Root แบบเงียบๆ ถ้าไม่ได้ Root ให้เปิดหน้าต่างติดตั้งปกติทันทีโดยไม่พ่นข้อความ Error
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 local PM_STATUS=$?
@@ -156,7 +160,6 @@ install_apk() {
                 fi
             fi
             
-            # โหมดปกติ (Non-Root) เปิดตัวติดตั้งแพ็กเกจขึ้นมา
             termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
             stty sane 2>/dev/null
             echo -e "${CR} ${C_GREEN}✅ เปิดหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
@@ -170,7 +173,7 @@ install_apk() {
 }
 
 process_selection() {
-    local CATEGORY_NAME=$1
+    local CATEGORY_NAME="$1"
     shift
     local APPS=("$@")
     local TOTAL=${#APPS[@]}
@@ -210,8 +213,8 @@ process_selection() {
         else
             for ITEM in $INPUT_CHOICE; do
                 if [[ "$ITEM" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-                    local START=${BASH_REMATCH[1]}
-                    local END=${BASH_REMATCH[2]}
+                    local START="${BASH_REMATCH[1]}"
+                    local END="${BASH_REMATCH[2]}"
                     
                     if [ "$START" -gt "$END" ]; then
                         local TEMP_NUM=$START
