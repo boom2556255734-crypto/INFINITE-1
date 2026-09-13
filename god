@@ -18,15 +18,16 @@ C_WHITE="\033[1;37m"
 C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
+# เส้นคั่นความกว้าง 55 ตัวอักษร (พอดีกับโลโก้เป๊ะ)
+C_DIV="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+C_SUB="───────────────────────────────────────────────────────"
+
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
 SCRIPT_VERSION="v1.0"
 
-# ==========================================
-# 2. ลูกเล่น: เอฟเฟกต์พิมพ์ดีด และสปินเนอร์ (แบบใหม่)
-# ==========================================
 type_text() {
     local text="$1"
     local color="$2"
@@ -38,20 +39,8 @@ type_text() {
     echo -e "${C_RESET}"
 }
 
-cyber_loader() {
-    local title="$1"
-    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-    local i=0
-    for ((j=0; j<15; j++)); do
-        i=$(( (i+1) % 10 ))
-        echo -ne "${CR} ${C_CYAN}${title} ${C_EMERALD}[${SPINNER[$i]}]${C_RESET}"
-        sleep 0.1
-    done
-    echo -e "${CR} ${C_CYAN}${title} ${C_GREEN}[DONE!]${C_RESET}"
-}
-
 # ==========================================
-# 3. ตรวจสอบสิทธิ์และโปรแกรมเสริม
+# 2. ตรวจสอบสิทธิ์และโปรแกรมเสริม
 # ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
@@ -91,9 +80,9 @@ get_device_info() {
 
 check_password() {
     clear
-    echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-    echo -e "       ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}       "
-    echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo -e "${C_EMERALD}${C_DIV}${C_RESET}"
+    echo -e "          ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}"
+    echo -e "${C_EMERALD}${C_DIV}${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -113,8 +102,7 @@ check_password() {
         
         if [ $IS_CORRECT -eq 1 ]; then
             type_text " ✔ รหัสผ่านถูกต้อง! กำลังเชื่อมต่อระบบ..." "$C_EMERALD"
-            cyber_loader "⚡ Initializing Core"
-            sleep 0.5
+            sleep 0.8
             get_device_info
             return 0
         else
@@ -127,20 +115,20 @@ check_password() {
 }
 
 # ==========================================
-# 4. ระบบติดตั้งแอป (เปลี่ยนอนิเมชันตอนโหลด)
+# 3. ระบบติดตั้งแอป (ลบหลอดสีฟ้าออกแล้ว 100%)
 # ==========================================
 install_apk() {
     local NAME=$1
     local URL=$2
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
 
-    echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+    echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
     rm -f "$TEMP_FILE"
     
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    # อนิเมชันสปินเนอร์หมุนอยู่กับที่ (ไม่มีบัคจอยืด)
+    # ใช้สปินเนอร์หมุนอยู่กับที่แทนหลอดสีฟ้ายาวยืด
     local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
     local i=0
     while kill -0 $PID 2>/dev/null; do
@@ -151,7 +139,6 @@ install_apk() {
     wait $PID
     local DL_STATUS=$?
     
-    # เมื่อโหลดเสร็จให้แสดงคำว่า SUCCESS ทับที่เดิม
     echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
@@ -196,18 +183,18 @@ process_selection() {
     while true; do
         clear
         stty sane 2>/dev/null
-        echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-        echo -e "         📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}         "
-        echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+        echo -e "${C_CYAN}${C_DIV}${C_RESET}"
+        echo -e "               📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}"
+        echo -e "${C_CYAN}${C_DIV}${C_RESET}"
         
         for i in "${!APPS[@]}"; do
             echo -e "${CR}  ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
         done
         
-        echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+        echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
         echo -e "${CR}  💡 ${C_YELLOW}พิมพ์หมายเลข (1-${TOTAL}), ช่วง (เช่น 1-3) หรือ all${C_RESET}"
         echo -e "${CR}     ${C_WHITE}(พิมพ์ 0 เพื่อกลับไปหน้าเมนูหลัก)${C_RESET}"
-        echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+        echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
 
         echo -ne "${CR}  🎯 ${C_GREEN}เลือกรายการ: ${C_RESET}"
         read INPUT_CHOICE
@@ -255,15 +242,15 @@ process_selection() {
         if [ $VALID_INPUT -eq 1 ]; then
             clear
             stty sane 2>/dev/null
-            echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-            echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
-            echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+            echo -e "${C_CYAN}${C_DIV}${C_RESET}"
+            echo -e "                 ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}"
+            echo -e "${C_CYAN}${C_DIV}${C_RESET}"
 
             for INDEX in "${SELECTED_INDICES[@]}"; do
                 install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
             done
             
-            echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+            echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
             echo -ne "${CR}  ✨ ${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
             read
         else
@@ -316,21 +303,21 @@ while true; do
     echo -e "${C_CYAN} ██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║   ██║   ██╔══╝  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║ ╚████║██║     ██║██║ ╚████║██║   ██║   ███████╗${C_RESET}"
     echo -e "${C_CYAN} ╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝${C_RESET}"
-    echo -e "${C_YELLOW}                  [ INFINITE SHOP $SCRIPT_VERSION ]                ${C_RESET}"
-    echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo -e "${C_YELLOW}                 [ INFINITE SHOP $SCRIPT_VERSION ]${C_RESET}"
+    echo -e "${C_CYAN}${C_DIV}${C_RESET}"
     echo -e "  👑 ${C_WHITE}Dev${C_RESET}  : $OWNER_NAME"
     echo -e "  💬 ${C_WHITE}Disc${C_RESET} : $DISCORD_LINK"
-    echo -e "${C_CYAN}──────────────────────────────────────────${C_RESET}"
+    echo -e "${C_CYAN}${C_SUB}${C_RESET}"
     echo -e "  📱 ${C_GREEN}OS${C_RESET}   : Android $OS_VER | $ARCH"
     echo -e "  💾 ${C_GREEN}MEM${C_RESET}  : RAM $RAM_GB | ROM $ROM_INFO"
-    echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo -e "${C_CYAN}${C_DIV}${C_RESET}"
     
     echo -e "${CR}  ${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCEUS_NORMAL_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[4]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_LITE_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_RED}[0] ออกจากระบบ${C_RESET}"
-    echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+    echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
     echo -ne "${CR}  🎯 ${C_GREEN}เลือกหมวดหมู่ที่ต้องการ (0-4): ${C_RESET}"
     read MAIN_CHOICE
     echo ""
@@ -350,7 +337,7 @@ done
 
 stty sane 2>/dev/null
 clear
-echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-echo -e "         ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}        "
-echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+echo -e "${C_CYAN}${C_DIV}${C_RESET}"
+echo -e "                ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}"
+echo -e "${C_CYAN}${C_DIV}${C_RESET}"
 echo ""
