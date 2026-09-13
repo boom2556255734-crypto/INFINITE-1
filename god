@@ -6,7 +6,7 @@
 hash -r 2>/dev/null
 stty sane 2>/dev/null
 
-# กำหนดรหัสสี (เพิ่มส่านีออนและไฮไลต์)
+# กำหนดรหัสสี
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
 C_GREEN="\033[1;32m"
@@ -22,11 +22,7 @@ OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
-SCRIPT_VERSION="v2.5 Pro"
 
-# ==========================================
-# 2. ลูกเล่น: เอฟเฟกต์พิมพ์ดีด และหลอดโหลดไซเบอร์
-# ==========================================
 type_text() {
     local text="$1"
     local color="$2"
@@ -42,15 +38,13 @@ cyber_loader() {
     local title="$1"
     echo -ne "${CR}${C_CYAN}${title} [${C_RESET}"
     for ((j=0; j<=20; j++)); do
-        echo -ne "${C_GREEN}█${C_RESET}"
+        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
+        echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.02
     done
     echo -e "${C_CYAN}] ${C_GREEN}DONE!${C_RESET}"
 }
 
-# ==========================================
-# 3. ตรวจสอบสิทธิ์และโปรแกรมเสริม
-# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -123,9 +117,6 @@ check_password() {
     exit 1
 }
 
-# ==========================================
-# 4. ระบบติดตั้งแอปพร้อมหลอดโหลดไซเบอร์
-# ==========================================
 install_apk() {
     local NAME=$1
     local URL=$2
@@ -138,7 +129,8 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     while kill -0 $PID 2>/dev/null; do
-        echo -ne "${C_GREEN}█${C_RESET}"
+        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
+        echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.15
     done
     wait $PID
@@ -301,14 +293,15 @@ check_password
 while true; do
     clear
     stty sane 2>/dev/null
-    # โลโก้ ASCII Art สุดอลังการ
+    # โลโก้ ASCII Art สีฟ้า
     echo -e "${C_CYAN} ██╗███╗   ██╗███████╗██╗███╗   ██╗██╗████████╗███████╗${C_RESET}"
     echo -e "${C_CYAN} ██║████╗  ██║██╔════╝██║████╗  ██║██║╚══██╔══╝██╔════╝${C_RESET}"
     echo -e "${C_CYAN} ██║██╔██╗ ██║█████╗  ██║██╔██╗ ██║██║   ██║   █████╗  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║   ██║   ██╔══╝  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║ ╚████║██║     ██║██║ ╚████║██║   ██║   ███████╗${C_RESET}"
     echo -e "${C_CYAN} ╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝${C_RESET}"
-    echo -e "${C_YELLOW}                  [ S H O P  $SCRIPT_VERSION ]                  ${C_RESET}"
+    # เปลี่ยนข้อความตรงนี้ตามต้องการ
+    echo -e "${C_YELLOW}                  [ INFINITE SHOP v1.0 ]                ${C_RESET}"
     echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     echo -e "  👑 ${C_WHITE}Dev${C_RESET}  : $OWNER_NAME"
     echo -e "  💬 ${C_WHITE}Disc${C_RESET} : $DISCORD_LINK"
