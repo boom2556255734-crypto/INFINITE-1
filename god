@@ -13,6 +13,7 @@ C_YELLOW="\033[1;33m"
 C_RED="\033[1;31m"
 C_PURPLE="\033[1;35m"
 C_BLUE="\033[1;34m"
+# CR คือตัวบังคับให้ข้อความกลับมาชิดซ้ายเสมอ
 CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
@@ -23,9 +24,9 @@ MAX_ATTEMPTS=3
 
 check_password() {
     clear
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
-    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -44,7 +45,7 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            echo -e "${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
+            echo -e "${CR}${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
             sleep 1
             return 0
         else
@@ -76,12 +77,10 @@ install_apk() {
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
-            # 1. แก้ไขสิทธิ์ไฟล์ให้ตัวติดตั้งแอปสามารถอ่านไฟล์นี้ได้
             chmod 777 "$TEMP_FILE" 2>/dev/null
             
             echo -e "${CR}${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
             
-            # 2. ตรวจสอบสิทธิ์ Root (เหมาะสำหรับ Emulator) เพื่อติดตั้งแบบเงียบๆ
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 if [ $? -eq 0 ]; then
@@ -91,7 +90,6 @@ install_apk() {
                     termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
                 fi
             else
-                # 3. สำหรับเครื่องทั่วไป บังคับระบุประเภทไฟล์ (MIME Type) ป้องกันหน้าต่างไม่เด้ง
                 termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
                 echo -e "${CR}${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กรุณากด 'ติดตั้ง' บนหน้าจอ)"
             fi
@@ -112,9 +110,9 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
-    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
     
     for i in "${!APPS[@]}"; do
         echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
@@ -149,9 +147,9 @@ process_selection() {
     fi
 
     clear
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
-    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
 
     for INDEX in "${SELECTED_INDICES[@]}"; do
         if [ $INDEX -ge 0 ] && [ $INDEX -lt $TOTAL ]; then
@@ -179,16 +177,16 @@ ARCEUS_APPS=(
 check_password
 
 clear
-echo -e "${C_CYAN}==========================================${C_RESET}"
-echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
-echo -e "${C_CYAN}==========================================${C_RESET}"
-echo -e "${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
-echo -e "${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
-echo -e "${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -ne "${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
+echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+echo -e "${CR}              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+echo -e "${CR}${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
+echo -e "${CR}${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "${CR}${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
+echo -e "${CR}${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+echo -ne "${CR}${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
 read MAIN_CHOICE
 echo ""
 
@@ -200,11 +198,12 @@ case $MAIN_CHOICE in
         process_selection "ArceusX lite" "${ARCEUS_APPS[@]}"
         ;;
     *)
-        echo -e "${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
+        echo -e "${CR}${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
         ;;
 esac
 
-echo -e "${C_CYAN}"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+# บังคับชิดซ้ายตอนจบทุกบรรทัด แก้บัคตกขอบจาก pm install
+echo -e "${CR}"
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "${CR}         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
