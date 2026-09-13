@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# ล้างแคชและรีเซ็ตหน้าจอ ป้องกันบัคตกค้าง
+# 1. ล้างแคชและเตรียมหน้าจอ (ดักบัคค้าง)
 # ==========================================
 hash -r 2>/dev/null
 stty sane 2>/dev/null
@@ -14,6 +14,7 @@ C_YELLOW="\033[1;33m"
 C_RED="\033[1;31m"
 C_PURPLE="\033[1;35m"
 C_BLUE="\033[1;34m"
+C_WHITE="\033[1;37m"
 CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
@@ -22,8 +23,28 @@ DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
 
+# ดึงข้อมูลเครื่องโชว์ความเท่ (ลูกเล่นใหม่)
+OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "Unknown")
+ARCH=$(uname -m 2>/dev/null || echo "Unknown")
+
 # ==========================================
-# เช็คสิทธิ์การเข้าถึงพื้นที่จัดเก็บข้อมูลอัตโนมัติ
+# 2. ระบบ Auto-Check ป้องกันบัคโปรแกรมไม่ครบ
+# ==========================================
+check_dependencies() {
+    local DEPS=("curl" "wget")
+    for DEP in "${DEPS[@]}"; do
+        if ! command -v $DEP >/dev/null 2>&1; then
+            clear
+            echo -e "${CR}${C_YELLOW}⚙️ ตรวจพบว่าระบบขาดแพ็กเกจ: ${C_WHITE}$DEP${C_RESET}"
+            echo -e "${CR}${C_CYAN}กำลังติดตั้งอัตโนมัติ กรุณารอสักครู่...${C_RESET}"
+            pkg install $DEP -y >/dev/null 2>&1
+        fi
+    done
+}
+check_dependencies
+
+# ==========================================
+# 3. เช็คสิทธิ์การเข้าถึงพื้นที่จัดเก็บข้อมูลอัตโนมัติ
 # ==========================================
 if [ ! -d "/sdcard/Download" ] || ! touch "/sdcard/Download/.test_perm" 2>/dev/null; then
     clear
@@ -57,7 +78,7 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            echo -e "${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
+            echo -e "${CR}${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
             sleep 1
             return 0
         else
@@ -75,11 +96,12 @@ install_apk() {
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
 
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-    echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด:${C_RESET} $NAME"
+    echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME${C_RESET}"
     
     rm -f "$TEMP_FILE"
     
-    if curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE"; then
+    # 📌 ลูกเล่นใหม่: ใช้ curl -# เพื่อแสดงหลอดเปอร์เซ็นต์การโหลดแทนการซ่อนเงียบ
+    if curl -# -L -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE"; then
         local DL_STATUS=0
     else
         wget -qO "$TEMP_FILE" "$URL"
@@ -160,8 +182,16 @@ process_selection() {
         else
             for ITEM in $INPUT_CHOICE; do
                 if [[ "$ITEM" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-                    START=${BASH_REMATCH[1]}
-                    END=${BASH_REMATCH[2]}
+                    local START=${BASH_REMATCH[1]}
+                    local END=${BASH_REMATCH[2]}
+                    
+                    # 📌 ลูกเล่นใหม่: ระบบ Smart Range (สลับเลขให้อัตโนมัติถ้าลูกค้าพิมพ์ผิดจากหลังมาหน้า)
+                    if [ "$START" -gt "$END" ]; then
+                        local TEMP_NUM=$START
+                        START=$END
+                        END=$TEMP_NUM
+                    fi
+
                     for ((i=START; i<=END; i++)); do
                         if [ $((i-1)) -ge 0 ] && [ $((i-1)) -lt $TOTAL ]; then
                             SELECTED_INDICES+=($((i-1)))
@@ -239,6 +269,7 @@ while true; do
     echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
     echo -e "${CR}${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
     echo -e "${CR}${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
+    echo -e "${CR}${C_CYAN}📱 Android   :${C_RESET} $OS_VER | ${C_YELLOW}CPU:${C_RESET} $ARCH"
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
     echo -e "${CR}${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
