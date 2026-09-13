@@ -18,7 +18,6 @@ CR="\r\033[K"
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 
-# เพิ่มรหัสผ่านใหม่ "wiwatz" เข้าไปในระบบ
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
 
@@ -60,7 +59,6 @@ check_password() {
 install_apk() {
     local NAME=$1
     local URL=$2
-    # ใช้งานโฟลเดอร์ Download ของเครื่อง เพื่อให้แอปติดตั้งทำงานได้
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
 
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
@@ -78,9 +76,25 @@ install_apk() {
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
-            echo -e "${CR}${C_GREEN}⚡ กำลังติดตั้ง:${C_RESET} $NAME ..."
-            termux-open "$TEMP_FILE"
-            echo -e "${CR}${C_GREEN}✅ เปิดหน้าต่างติดตั้งสำเร็จ:${C_RESET} $NAME"
+            # 1. แก้ไขสิทธิ์ไฟล์ให้ตัวติดตั้งแอปสามารถอ่านไฟล์นี้ได้
+            chmod 777 "$TEMP_FILE" 2>/dev/null
+            
+            echo -e "${CR}${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
+            
+            # 2. ตรวจสอบสิทธิ์ Root (เหมาะสำหรับ Emulator) เพื่อติดตั้งแบบเงียบๆ
+            if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
+                su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                    echo -e "${CR}${C_GREEN}✅ ติดตั้งแอปเสร็จสมบูรณ์ลงในเครื่องแล้ว!${C_RESET}"
+                else
+                    echo -e "${CR}${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว กำลังเรียกหน้าต่างปกติ...${C_RESET}"
+                    termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                fi
+            else
+                # 3. สำหรับเครื่องทั่วไป บังคับระบุประเภทไฟล์ (MIME Type) ป้องกันหน้าต่างไม่เด้ง
+                termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                echo -e "${CR}${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กรุณากด 'ติดตั้ง' บนหน้าจอ)"
+            fi
         else
             echo -e "${CR}${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
             rm -f "$TEMP_FILE"
