@@ -4,6 +4,8 @@
 # ล้างแคชและป้องกันการรันสคริปต์เก่า
 # ==========================================
 hash -r 2>/dev/null
+# สั่งรีเซ็ตหน้าจอตั้งแต่เริ่ม เพื่อป้องกันบัคตกค้าง
+stty sane 2>/dev/null
 
 # กำหนดรหัสสีเพื่อความสวยงาม
 C_RESET="\033[0m"
@@ -13,7 +15,6 @@ C_YELLOW="\033[1;33m"
 C_RED="\033[1;31m"
 C_PURPLE="\033[1;35m"
 C_BLUE="\033[1;34m"
-# CR คือตัวบังคับให้ข้อความกลับมาชิดซ้ายเสมอ
 CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
@@ -24,9 +25,9 @@ MAX_ATTEMPTS=3
 
 check_password() {
     clear
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
-    echo -e "${CR}              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -45,7 +46,7 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            echo -e "${CR}${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
+            echo -e "${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
             sleep 1
             return 0
         else
@@ -82,15 +83,23 @@ install_apk() {
             echo -e "${CR}${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
             
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
+                # เรียกติดตั้งแอปเบื้องหลัง
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
-                if [ $? -eq 0 ]; then
+                local PM_STATUS=$?
+                
+                # [สำคัญมาก] รีเซ็ตหน้าจอ Termux ทันทีหลังจาก pm install ทำงานเสร็จ
+                stty sane 2>/dev/null
+                
+                if [ $PM_STATUS -eq 0 ]; then
                     echo -e "${CR}${C_GREEN}✅ ติดตั้งแอปเสร็จสมบูรณ์ลงในเครื่องแล้ว!${C_RESET}"
                 else
                     echo -e "${CR}${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว กำลังเรียกหน้าต่างปกติ...${C_RESET}"
                     termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                    stty sane 2>/dev/null
                 fi
             else
                 termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                stty sane 2>/dev/null
                 echo -e "${CR}${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กรุณากด 'ติดตั้ง' บนหน้าจอ)"
             fi
         else
@@ -110,9 +119,10 @@ process_selection() {
     local TOTAL=${#APPS[@]}
 
     clear
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
-    echo -e "${CR}          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    stty sane 2>/dev/null
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
     
     for i in "${!APPS[@]}"; do
         echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
@@ -147,9 +157,10 @@ process_selection() {
     fi
 
     clear
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
-    echo -e "${CR}          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
-    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    stty sane 2>/dev/null
+    echo -e "${C_CYAN}==========================================${C_RESET}"
+    echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
+    echo -e "${C_CYAN}==========================================${C_RESET}"
 
     for INDEX in "${SELECTED_INDICES[@]}"; do
         if [ $INDEX -ge 0 ] && [ $INDEX -lt $TOTAL ]; then
@@ -177,16 +188,17 @@ ARCEUS_APPS=(
 check_password
 
 clear
-echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
-echo -e "${CR}              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
-echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
-echo -e "${CR}${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
-echo -e "${CR}${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "${CR}${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
-echo -e "${CR}${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-echo -ne "${CR}${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
+stty sane 2>/dev/null
+echo -e "${C_CYAN}==========================================${C_RESET}"
+echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+echo -e "${C_CYAN}==========================================${C_RESET}"
+echo -e "${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
+echo -e "${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
+echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
+echo -e "${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
+echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+echo -ne "${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
 read MAIN_CHOICE
 echo ""
 
@@ -198,12 +210,14 @@ case $MAIN_CHOICE in
         process_selection "ArceusX lite" "${ARCEUS_APPS[@]}"
         ;;
     *)
-        echo -e "${CR}${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
+        echo -e "${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
         ;;
 esac
 
-# บังคับชิดซ้ายตอนจบทุกบรรทัด แก้บัคตกขอบจาก pm install
-echo -e "${CR}"
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "${CR}         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+# คืนค่าหน้าจอให้สมบูรณ์ 100% ก่อนจบการทำงาน ป้องกัน prompt (~ $) ตกขอบ
+stty sane 2>/dev/null
+echo -e "${C_CYAN}"
+echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
+echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+echo ""
