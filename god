@@ -15,7 +15,7 @@ C_RED="\033[1;31m"
 C_PURPLE="\033[1;35m"
 C_BLUE="\033[1;34m"
 C_WHITE="\033[1;37m"
-C_MAGENTA="\033[1;35m"
+C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
@@ -38,7 +38,6 @@ cyber_loader() {
     local title="$1"
     echo -ne "${CR}${C_CYAN}${title} [${C_RESET}"
     for ((j=0; j<=20; j++)); do
-        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
         echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.02
     done
@@ -64,9 +63,10 @@ get_device_info() {
     OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "?")
     ARCH=$(uname -m 2>/dev/null || echo "?")
     
-    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
     if [ -n "$RAM_KB" ]; then
-        RAM_GB=$(awk "BEGIN {printf \"%.1f\", $RAM_KB/1048576}" 2>/dev/null)" GB"
+        local mem_val=$(echo "$RAM_KB" | awk '{print $2}')
+        RAM_GB=$(awk "BEGIN {printf \"%.1f\", $mem_val/1048576}" 2>/dev/null)" GB"
     else
         RAM_GB="?"
     fi
@@ -82,13 +82,13 @@ get_device_info() {
 
 check_password() {
     clear
-    echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-    echo -e "${C_CYAN}║${C_RESET}        ${C_MAGENTA}⚡ CYBERNETIC LOGIN ⚡${C_RESET}          ${C_CYAN}║${C_RESET}"
-    echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
+    echo -e "${C_EMERALD}┌──────────────────────────────────────────┐${C_RESET}"
+    echo -e "${C_EMERALD}│${C_RESET}       ${C_GREEN}SECURE SYSTEM AUTHENTICATION${C_RESET}       ${C_EMERALD}│${C_RESET}"
+    echo -e "${C_EMERALD}└──────────────────────────────────────────┘${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-        echo -ne "${CR} ${C_GREEN}🔑 กรอกรหัสผ่านระบบ: ${C_RESET}"
+        echo -ne "${CR} ${C_EMERALD}🔑 กรอกรหัสผ่านระบบ: ${C_RESET}"
         read -s USER_PASS
         echo ""
         
@@ -103,7 +103,7 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            type_text " ✔ รหัสผ่านถูกต้อง! กำลังเชื่อมต่อระบบ..." "$C_GREEN"
+            type_text " ✔ รหัสผ่านถูกต้อง! กำลังเชื่อมต่อระบบ..." "$C_EMERALD"
             cyber_loader "⚡ Initializing Core"
             sleep 0.5
             get_device_info
@@ -129,7 +129,6 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     while kill -0 $PID 2>/dev/null; do
-        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
         echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.15
     done
@@ -179,9 +178,10 @@ process_selection() {
     while true; do
         clear
         stty sane 2>/dev/null
-        echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-        echo -e "${C_CYAN}║${C_RESET}       📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          ${C_CYAN}║${C_RESET}"
-        echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
+        # ขยายความกว้างกรอบหัวข้อหมวดหมู่ให้พอดี
+        echo -e "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}"
+        echo -e "${C_CYAN}│${C_RESET}       📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          ${C_CYAN}│${C_RESET}"
+        echo -e "${C_CYAN}└──────────────────────────────────────────┘${C_RESET}"
         
         for i in "${!APPS[@]}"; do
             echo -e "${CR}  ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
@@ -203,7 +203,7 @@ process_selection() {
         local SELECTED_INDICES=()
         local VALID_INPUT=0
 
-        if [[ "$INPUT_CHOICE" == "all" || "$INPUT_CHOICE" == "ALL" ]]; then
+        if [ "$INPUT_CHOICE" == "all" ] || [ "$INPUT_CHOICE" == "ALL" ]; then
             for i in "${!APPS[@]}"; do
                 SELECTED_INDICES+=($i)
             done
@@ -238,15 +238,16 @@ process_selection() {
         if [ $VALID_INPUT -eq 1 ]; then
             clear
             stty sane 2>/dev/null
-            echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-            echo -e "${C_CYAN}║${C_RESET}          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          ${C_CYAN}║${C_RESET}"
-            echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
+            # ขยายความกว้างกรอบหัวข้อ "กำลังดำเนินการติดตั้ง" ให้ยาวขึ้น ป้องกันเส้นแตก
+            echo -e "${C_CYAN}┌──────────────────────────────────────────────────────┐${C_RESET}"
+            echo -e "${C_CYAN}│${C_RESET}             ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}              ${C_CYAN}│${C_RESET}"
+            echo -e "${C_CYAN}└──────────────────────────────────────────────────────┘${C_RESET}"
 
             for INDEX in "${SELECTED_INDICES[@]}"; do
                 install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
             done
             
-            echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
+            echo -e "${CR}${C_CYAN}──────────────────────────────────────────────────────${C_RESET}"
             echo -ne "${CR}  ✨ ${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
             read
         else
@@ -293,14 +294,12 @@ check_password
 while true; do
     clear
     stty sane 2>/dev/null
-    # โลโก้ ASCII Art สีฟ้า
     echo -e "${C_CYAN} ██╗███╗   ██╗███████╗██╗███╗   ██╗██╗████████╗███████╗${C_RESET}"
     echo -e "${C_CYAN} ██║████╗  ██║██╔════╝██║████╗  ██║██║╚══██╔══╝██╔════╝${C_RESET}"
     echo -e "${C_CYAN} ██║██╔██╗ ██║█████╗  ██║██╔██╗ ██║██║   ██║   █████╗  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║   ██║   ██╔══╝  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║ ╚████║██║     ██║██║ ╚████║██║   ██║   ███████╗${C_RESET}"
     echo -e "${C_CYAN} ╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝${C_RESET}"
-    # เปลี่ยนข้อความตรงนี้ตามต้องการ
     echo -e "${C_YELLOW}                  [ INFINITE SHOP v1.0 ]                ${C_RESET}"
     echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     echo -e "  👑 ${C_WHITE}Dev${C_RESET}  : $OWNER_NAME"
@@ -335,7 +334,7 @@ done
 
 stty sane 2>/dev/null
 clear
-echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-echo -e "${C_CYAN}║${C_RESET}         ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}        ${C_CYAN}║${C_RESET}"
-echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
+echo -e "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}"
+echo -e "${C_CYAN}│${C_RESET}         ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}        ${C_CYAN}│${C_RESET}"
+echo -e "${C_CYAN}└──────────────────────────────────────────┘${C_RESET}"
 echo ""
