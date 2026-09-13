@@ -18,6 +18,7 @@ C_WHITE="\033[1;37m"
 C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
+# เส้นคั่นความกว้าง 55 ตัวอักษร (พอดีกับโลโก้เป๊ะ)
 C_DIV="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 C_SUB="───────────────────────────────────────────────────────"
 
@@ -38,6 +39,9 @@ type_text() {
     echo -e "${C_RESET}"
 }
 
+# ==========================================
+# 2. ตรวจสอบสิทธิ์และโปรแกรมเสริม
+# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -111,7 +115,7 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (เปลี่ยนสปินเนอร์เป็นแบบ ASCII รองรับทุกเครื่อง)
+# 3. ระบบติดตั้งแอป (สไตล์มืออาชีพ คลีนๆ [OK])
 # ==========================================
 install_apk() {
     local NAME=$1
@@ -124,7 +128,6 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    # ใช้สปินเนอร์แบบขีดหมุน ASCII ป้องกันอักษรเพี้ยน 100%
     local SPINNER=("/" "-" "\" "|")
     local i=0
     while kill -0 $PID 2>/dev/null; do
@@ -135,7 +138,8 @@ install_apk() {
     wait $PID
     local DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
+    # เปลี่ยนเป็น [OK] สไตล์โปรแกรมเมอร์มืออาชีพ
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
@@ -144,7 +148,6 @@ install_apk() {
             
             echo -e "${CR} ${C_GREEN}⚡ กำลังเปิดหน้าต่างติดตั้ง:${C_RESET} $NAME ..."
             
-            # ตรวจสอบสิทธิ์ Root แบบเงียบๆ ถ้าไม่ได้ Root ให้เปิดหน้าต่างติดตั้งปกติทันทีโดยไม่พ่นข้อความ Error
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 local PM_STATUS=$?
@@ -156,7 +159,6 @@ install_apk() {
                 fi
             fi
             
-            # โหมดปกติ (Non-Root) เปิดตัวติดตั้งแพ็กเกจขึ้นมา
             termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
             stty sane 2>/dev/null
             echo -e "${CR} ${C_GREEN}✅ เปิดหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
@@ -321,7 +323,7 @@ while true; do
     
     echo -e "${CR}  ${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
-    echo -e "${CR}  ${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCEUS_NORMAL_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}  ${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCE_NORMAL_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[4]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_LITE_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_RED}[0] ออกจากระบบ${C_RESET}"
     echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
