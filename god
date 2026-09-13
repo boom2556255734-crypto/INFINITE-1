@@ -18,6 +18,7 @@ C_WHITE="\033[1;37m"
 C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
+# เส้นคั่นความกว้าง 55 ตัวอักษร (พอดีกับโลโก้เป๊ะ)
 C_DIV="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 C_SUB="───────────────────────────────────────────────────────"
 
@@ -38,6 +39,9 @@ type_text() {
     echo -e "${C_RESET}"
 }
 
+# ==========================================
+# 2. ตรวจสอบสิทธิ์และโปรแกรมเสริม
+# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -57,20 +61,16 @@ get_device_info() {
     OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "?")
     ARCH=$(uname -m 2>/dev/null || echo "?")
     
-    local RAM_KB
-    RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
+    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
     if [ -n "$RAM_KB" ]; then
-        local mem_val
-        mem_val=$(echo "$RAM_KB" | awk '{print $2}')
+        local mem_val=$(echo "$RAM_KB" | awk '{print $2}')
         RAM_GB=$(awk "BEGIN {printf \"%.1f\", $mem_val/1048576}" 2>/dev/null)" GB"
     else
         RAM_GB="?"
     fi
     
-    local ROM_TOTAL
-    ROM_TOTAL=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $2}')
-    local ROM_FREE
-    ROM_FREE=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $4}')
+    local ROM_TOTAL=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $2}')
+    local ROM_FREE=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $4}')
     if [ -n "$ROM_TOTAL" ]; then
         ROM_INFO="${ROM_TOTAL} (ว่าง ${ROM_FREE})"
     else
@@ -115,39 +115,37 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (ปลอดภัย ไร้อักขระพิเศษ)
+# 3. ระบบติดตั้งแอป
 # ==========================================
 install_apk() {
-    local NAME="$1"
-    local URL="$2"
+    local NAME=$1
+    local URL=$2
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
-    local PID=""
-    local DL_STATUS=0
 
     echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
     rm -f "$TEMP_FILE"
     
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
-    PID=$!
+    local PID=$!
     
-    local DOTS=""
+    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    local i=0
     while kill -0 $PID 2>/dev/null; do
-        if [ ${#DOTS} -ge 3 ]; then DOTS=""; else DOTS+="."; fi
-        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}${DOTS}${C_RESET}"
-        sleep 0.4
+        i=$(( (i+1) % 10 ))
+        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${SPINNER[$i]}]${C_RESET}"
+        sleep 0.1
     done
     wait $PID
-    DL_STATUS=$?
+    local DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
-        local FILE_SIZE
-        FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
+        local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
         if [ "$FILE_SIZE" -gt 1024 ]; then
             chmod 777 "$TEMP_FILE" 2>/dev/null
             
-            echo -e "${CR} ${C_GREEN}⚡ กำลังเปิดหน้าต่างติดตั้ง:${C_RESET} $NAME ..."
+            echo -e "${CR} ${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
             
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
@@ -156,13 +154,16 @@ install_apk() {
                 
                 if [ $PM_STATUS -eq 0 ]; then
                     echo -e "${CR} ${C_GREEN}✅ ติดตั้งแอปเสร็จสมบูรณ์ลงในเครื่องแล้ว!${C_RESET}"
-                    return
+                else
+                    echo -e "${CR} ${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว เรียกหน้าต่างปกติ...${C_RESET}"
+                    termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                    stty sane 2>/dev/null
                 fi
+            else
+                termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+                stty sane 2>/dev/null
+                echo -e "${CR} ${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
             fi
-            
-            termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
-            stty sane 2>/dev/null
-            echo -e "${CR} ${C_GREEN}✅ เปิดหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
         else
             echo -e "${CR} ${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
             rm -f "$TEMP_FILE"
@@ -173,7 +174,7 @@ install_apk() {
 }
 
 process_selection() {
-    local CATEGORY_NAME="$1"
+    local CATEGORY_NAME=$1
     shift
     local APPS=("$@")
     local TOTAL=${#APPS[@]}
@@ -213,8 +214,8 @@ process_selection() {
         else
             for ITEM in $INPUT_CHOICE; do
                 if [[ "$ITEM" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-                    local START="${BASH_REMATCH[1]}"
-                    local END="${BASH_REMATCH[2]}"
+                    local START=${BASH_REMATCH[1]}
+                    local END=${BASH_REMATCH[2]}
                     
                     if [ "$START" -gt "$END" ]; then
                         local TEMP_NUM=$START
@@ -269,6 +270,7 @@ DELTA_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.736.1408.apk"
 )
 
+# 📌 อัปเดตลิงก์ Delta Lite ใหม่ทั้ง 8 ลิงก์
 DELTA_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.736.1408.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.736.1408.apk"
