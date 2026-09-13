@@ -18,7 +18,6 @@ C_WHITE="\033[1;37m"
 C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
-# เส้นคั่นความกว้าง 55 ตัวอักษร (พอดีกับโลโก้เป๊ะ)
 C_DIV="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 C_SUB="───────────────────────────────────────────────────────"
 
@@ -39,9 +38,6 @@ type_text() {
     echo -e "${C_RESET}"
 }
 
-# ==========================================
-# 2. ตรวจสอบสิทธิ์และโปรแกรมเสริม
-# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -115,7 +111,7 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (สไตล์มืออาชีพ คลีนๆ [OK])
+# 3. ระบบติดตั้งแอป (แก้ไข Syntax ปลอดภัย 100%)
 # ==========================================
 install_apk() {
     local NAME=$1
@@ -128,7 +124,8 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    local SPINNER=("/" "-" "\" "|")
+    # ใช้สปินเนอร์แบบตัวอักษรปลอดภัย ไร้ปัญหา Syntax Error
+    local SPINNER=("/" "-" "+" "*")
     local i=0
     while kill -0 $PID 2>/dev/null; do
         i=$(( (i+1) % 4 ))
@@ -138,7 +135,6 @@ install_apk() {
     wait $PID
     local DL_STATUS=$?
     
-    # เปลี่ยนเป็น [OK] สไตล์โปรแกรมเมอร์มืออาชีพ
     echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
@@ -323,7 +319,7 @@ while true; do
     
     echo -e "${CR}  ${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
-    echo -e "${CR}  ${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCE_NORMAL_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}  ${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCEUS_NORMAL_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_PURPLE}[4]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_LITE_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}  ${C_RED}[0] ออกจากระบบ${C_RESET}"
     echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
