@@ -264,6 +264,7 @@ ARCEUS_NORMAL_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.8_2.737.1584.apk"
 )
 
+# 📌 อัปเดตลิงก์ ArceusX lite ทั้ง 8 ตัวจริงเรียบร้อยแล้ว
 ARCEUS_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.1_2.737.1584.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.2_2.737.1584.apk"
