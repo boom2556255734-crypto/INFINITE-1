@@ -22,7 +22,11 @@ OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
+SCRIPT_VERSION="v1.0"
 
+# ==========================================
+# 2. ลูกเล่น: เอฟเฟกต์พิมพ์ดีด และสปินเนอร์ (แบบใหม่)
+# ==========================================
 type_text() {
     local text="$1"
     local color="$2"
@@ -36,14 +40,19 @@ type_text() {
 
 cyber_loader() {
     local title="$1"
-    echo -ne "${CR}${C_CYAN}${title} [${C_RESET}"
-    for ((j=0; j<=20; j++)); do
-        echo -ne "${C_CYAN}█${C_RESET}"
-        sleep 0.02
+    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    local i=0
+    for ((j=0; j<15; j++)); do
+        i=$(( (i+1) % 10 ))
+        echo -ne "${CR} ${C_CYAN}${title} ${C_EMERALD}[${SPINNER[$i]}]${C_RESET}"
+        sleep 0.1
     done
-    echo -e "${C_CYAN}] ${C_GREEN}DONE!${C_RESET}"
+    echo -e "${CR} ${C_CYAN}${title} ${C_GREEN}[DONE!]${C_RESET}"
 }
 
+# ==========================================
+# 3. ตรวจสอบสิทธิ์และโปรแกรมเสริม
+# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -82,7 +91,6 @@ get_device_info() {
 
 check_password() {
     clear
-    # ดีไซน์ใหม่: ใช้เส้นคั่นแนวนอนแทนกรอบ ตัดปัญหาขอบแตก 100%
     echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     echo -e "       ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}       "
     echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
@@ -118,6 +126,9 @@ check_password() {
     exit 1
 }
 
+# ==========================================
+# 4. ระบบติดตั้งแอป (เปลี่ยนอนิเมชันตอนโหลด)
+# ==========================================
 install_apk() {
     local NAME=$1
     local URL=$2
@@ -126,16 +137,22 @@ install_apk() {
     echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
     rm -f "$TEMP_FILE"
     
-    echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${C_RESET}"
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
+    
+    # อนิเมชันสปินเนอร์หมุนอยู่กับที่ (ไม่มีบัคจอยืด)
+    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    local i=0
     while kill -0 $PID 2>/dev/null; do
-        echo -ne "${C_CYAN}█${C_RESET}"
-        sleep 0.15
+        i=$(( (i+1) % 10 ))
+        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${SPINNER[$i]}]${C_RESET}"
+        sleep 0.1
     done
     wait $PID
     local DL_STATUS=$?
-    echo -e "${C_CYAN}] ${C_GREEN}SUCCESS!${C_RESET}"
+    
+    # เมื่อโหลดเสร็จให้แสดงคำว่า SUCCESS ทับที่เดิม
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
@@ -179,7 +196,6 @@ process_selection() {
     while true; do
         clear
         stty sane 2>/dev/null
-        # เปลี่ยนเป็นเส้นคั่นแนวนอนสำหรับหมวดหมู่
         echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
         echo -e "         📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}         "
         echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
@@ -239,7 +255,6 @@ process_selection() {
         if [ $VALID_INPUT -eq 1 ]; then
             clear
             stty sane 2>/dev/null
-            # เปลี่ยนเป็นเส้นคั่นแนวนอนสำหรับหน้ากำลังติดตั้ง (หมดปัญหาขอบแตก)
             echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
             echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
             echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
@@ -301,7 +316,7 @@ while true; do
     echo -e "${C_CYAN} ██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║   ██║   ██╔══╝  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║ ╚████║██║     ██║██║ ╚████║██║   ██║   ███████╗${C_RESET}"
     echo -e "${C_CYAN} ╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝${C_RESET}"
-    echo -e "${C_YELLOW}                  [ INFINITE SHOP v1.0 ]                ${C_RESET}"
+    echo -e "${C_YELLOW}                  [ INFINITE SHOP $SCRIPT_VERSION ]                ${C_RESET}"
     echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     echo -e "  👑 ${C_WHITE}Dev${C_RESET}  : $OWNER_NAME"
     echo -e "  💬 ${C_WHITE}Disc${C_RESET} : $DISCORD_LINK"
