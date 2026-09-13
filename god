@@ -82,9 +82,10 @@ get_device_info() {
 
 check_password() {
     clear
-    echo -e "${C_EMERALD}┌──────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_EMERALD}│${C_RESET}       ${C_GREEN}SECURE SYSTEM AUTHENTICATION${C_RESET}       ${C_EMERALD}│${C_RESET}"
-    echo -e "${C_EMERALD}└──────────────────────────────────────────┘${C_RESET}"
+    # ดีไซน์ใหม่: ใช้เส้นคั่นแนวนอนแทนกรอบ ตัดปัญหาขอบแตก 100%
+    echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo -e "       ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}       "
+    echo -e "${C_EMERALD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -178,10 +179,10 @@ process_selection() {
     while true; do
         clear
         stty sane 2>/dev/null
-        # ขยายความกว้างกรอบหัวข้อหมวดหมู่ให้พอดี
-        echo -e "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}"
-        echo -e "${C_CYAN}│${C_RESET}       📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          ${C_CYAN}│${C_RESET}"
-        echo -e "${C_CYAN}└──────────────────────────────────────────┘${C_RESET}"
+        # เปลี่ยนเป็นเส้นคั่นแนวนอนสำหรับหมวดหมู่
+        echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+        echo -e "         📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}         "
+        echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
         
         for i in "${!APPS[@]}"; do
             echo -e "${CR}  ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
@@ -238,16 +239,16 @@ process_selection() {
         if [ $VALID_INPUT -eq 1 ]; then
             clear
             stty sane 2>/dev/null
-            # ขยายความกว้างกรอบหัวข้อ "กำลังดำเนินการติดตั้ง" ให้ยาวขึ้น ป้องกันเส้นแตก
-            echo -e "${C_CYAN}┌──────────────────────────────────────────────────────┐${C_RESET}"
-            echo -e "${C_CYAN}│${C_RESET}             ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}              ${C_CYAN}│${C_RESET}"
-            echo -e "${C_CYAN}└──────────────────────────────────────────────────────┘${C_RESET}"
+            # เปลี่ยนเป็นเส้นคั่นแนวนอนสำหรับหน้ากำลังติดตั้ง (หมดปัญหาขอบแตก)
+            echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+            echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
+            echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
 
             for INDEX in "${SELECTED_INDICES[@]}"; do
                 install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
             done
             
-            echo -e "${CR}${C_CYAN}──────────────────────────────────────────────────────${C_RESET}"
+            echo -e "${CR}${C_CYAN}──────────────────────────────────────────${C_RESET}"
             echo -ne "${CR}  ✨ ${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
             read
         else
@@ -334,7 +335,7 @@ done
 
 stty sane 2>/dev/null
 clear
-echo -e "${C_CYAN}┌──────────────────────────────────────────┐${C_RESET}"
-echo -e "${C_CYAN}│${C_RESET}         ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}        ${C_CYAN}│${C_RESET}"
-echo -e "${C_CYAN}└──────────────────────────────────────────┘${C_RESET}"
+echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+echo -e "         ${C_GREEN}✨ ออกจากระบบเรียบร้อย ✨${C_RESET}        "
+echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
 echo ""
