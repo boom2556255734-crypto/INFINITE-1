@@ -1,13 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# ล้างแคชและป้องกันการรันสคริปต์เก่า
+# ล้างแคชและรีเซ็ตหน้าจอ ป้องกันบัคตกค้าง
 # ==========================================
 hash -r 2>/dev/null
-# สั่งรีเซ็ตหน้าจอตั้งแต่เริ่ม เพื่อป้องกันบัคตกค้าง
 stty sane 2>/dev/null
 
-# กำหนดรหัสสีเพื่อความสวยงาม
+# กำหนดรหัสสี
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
 C_GREEN="\033[1;32m"
@@ -22,6 +21,18 @@ DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
+
+# ==========================================
+# เช็คสิทธิ์การเข้าถึงพื้นที่จัดเก็บข้อมูลอัตโนมัติ
+# ==========================================
+if [ ! -d "/sdcard/Download" ] || ! touch "/sdcard/Download/.test_perm" 2>/dev/null; then
+    clear
+    echo -e "${CR}${C_YELLOW}⚠️ ระบบต้องการสิทธิ์เข้าถึงพื้นที่จัดเก็บข้อมูล...${C_RESET}"
+    echo -e "${CR}${C_CYAN}กรุณากด 'อนุญาต (Allow)' ที่หน้าจอของคุณ${C_RESET}"
+    termux-setup-storage
+    sleep 3
+fi
+rm -f "/sdcard/Download/.test_perm" 2>/dev/null
 
 check_password() {
     clear
@@ -83,11 +94,8 @@ install_apk() {
             echo -e "${CR}${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
             
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
-                # เรียกติดตั้งแอปเบื้องหลัง
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 local PM_STATUS=$?
-                
-                # [สำคัญมาก] รีเซ็ตหน้าจอ Termux ทันทีหลังจาก pm install ทำงานเสร็จ
                 stty sane 2>/dev/null
                 
                 if [ $PM_STATUS -eq 0 ]; then
@@ -118,53 +126,73 @@ process_selection() {
     local APPS=("$@")
     local TOTAL=${#APPS[@]}
 
-    clear
-    stty sane 2>/dev/null
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    
-    for i in "${!APPS[@]}"; do
-        echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
-    done
-    
-    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-    echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
-    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-
-    echo -ne "${CR}${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
-    read INPUT_CHOICE
-    echo ""
-
-    local SELECTED_INDICES=()
-
-    if [[ "$INPUT_CHOICE" == "all" || "$INPUT_CHOICE" == "ALL" ]]; then
+    while true; do
+        clear
+        stty sane 2>/dev/null
+        echo -e "${C_CYAN}==========================================${C_RESET}"
+        echo -e "          📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}          "
+        echo -e "${C_CYAN}==========================================${C_RESET}"
+        
         for i in "${!APPS[@]}"; do
-            SELECTED_INDICES+=($i)
+            echo -e "${CR} ${C_PURPLE}[$((i+1))]${C_RESET} ${C_BLUE}▸${C_RESET} $CATEGORY_NAME $((i+1))"
         done
-    else
-        for ITEM in $INPUT_CHOICE; do
-            if [[ "$ITEM" =~ ^([0-9]+)-([0-9]+)$ ]]; then
-                START=${BASH_REMATCH[1]}
-                END=${BASH_REMATCH[2]}
-                for ((i=START; i<=END; i++)); do
-                    SELECTED_INDICES+=($((i-1)))
-                done
-            elif [[ "$ITEM" =~ ^[0-9]+$ ]]; then
-                SELECTED_INDICES+=($((ITEM-1)))
-            fi
-        done
-    fi
+        
+        echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+        echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all (พิมพ์ 0 เพื่อกลับ)"
+        echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 
-    clear
-    stty sane 2>/dev/null
-    echo -e "${C_CYAN}==========================================${C_RESET}"
-    echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
-    echo -e "${C_CYAN}==========================================${C_RESET}"
+        echo -ne "${CR}${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
+        read INPUT_CHOICE
+        echo ""
 
-    for INDEX in "${SELECTED_INDICES[@]}"; do
-        if [ $INDEX -ge 0 ] && [ $INDEX -lt $TOTAL ]; then
-            install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
+        if [ "$INPUT_CHOICE" == "0" ]; then
+            return 0
+        fi
+
+        local SELECTED_INDICES=()
+        local VALID_INPUT=0
+
+        if [[ "$INPUT_CHOICE" == "all" || "$INPUT_CHOICE" == "ALL" ]]; then
+            for i in "${!APPS[@]}"; do
+                SELECTED_INDICES+=($i)
+            done
+            VALID_INPUT=1
+        else
+            for ITEM in $INPUT_CHOICE; do
+                if [[ "$ITEM" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+                    START=${BASH_REMATCH[1]}
+                    END=${BASH_REMATCH[2]}
+                    for ((i=START; i<=END; i++)); do
+                        if [ $((i-1)) -ge 0 ] && [ $((i-1)) -lt $TOTAL ]; then
+                            SELECTED_INDICES+=($((i-1)))
+                            VALID_INPUT=1
+                        fi
+                    done
+                elif [[ "$ITEM" =~ ^[0-9]+$ ]]; then
+                    if [ $((ITEM-1)) -ge 0 ] && [ $((ITEM-1)) -lt $TOTAL ]; then
+                        SELECTED_INDICES+=($((ITEM-1)))
+                        VALID_INPUT=1
+                    fi
+                fi
+            done
+        fi
+
+        if [ $VALID_INPUT -eq 1 ]; then
+            clear
+            stty sane 2>/dev/null
+            echo -e "${C_CYAN}==========================================${C_RESET}"
+            echo -e "          ${C_GREEN}🚀 กำลังดำเนินการติดตั้ง${C_RESET}          "
+            echo -e "${C_CYAN}==========================================${C_RESET}"
+
+            for INDEX in "${SELECTED_INDICES[@]}"; do
+                install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
+            done
+            
+            echo -e "${CR}${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
+            read
+        else
+            echo -e "${CR}${C_RED}[!] ป้อนข้อมูลไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
+            sleep 1
         fi
     done
 }
@@ -174,7 +202,23 @@ DELTA_APPS=(
   "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta2.apk"
 )
 
-ARCEUS_APPS=(
+DELTA_LITE_APPS=(
+  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta_lite1.apk"
+  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta_lite2.apk"
+)
+
+ARCEUS_NORMAL_APPS=(
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.1_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.2_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.3_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.4_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.5_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.6_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.7_2.737.1584.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.by.Suphawat.8_2.737.1584.apk"
+)
+
+ARCEUS_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.1_2.737.1584.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.2_2.737.1584.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.3_2.737.1584.apk"
@@ -187,37 +231,41 @@ ARCEUS_APPS=(
 
 check_password
 
-clear
-stty sane 2>/dev/null
-echo -e "${C_CYAN}==========================================${C_RESET}"
-echo -e "              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
-echo -e "${C_CYAN}==========================================${C_RESET}"
-echo -e "${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
-echo -e "${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
-echo -e "${C_PURPLE}[2]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_APPS[@]}${C_RESET} Apps)"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -ne "${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (1-2): ${C_RESET}"
-read MAIN_CHOICE
-echo ""
+while true; do
+    clear
+    stty sane 2>/dev/null
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}              ${C_YELLOW}INFINITE SHOP${C_RESET}             "
+    echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+    echo -e "${CR}${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
+    echo -e "${CR}${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
+    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+    echo -e "${CR}${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}${C_PURPLE}[3]${C_RESET} ArceusX      (${C_GREEN}${#ARCEUS_NORMAL_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}${C_PURPLE}[4]${C_RESET} ArceusX lite (${C_GREEN}${#ARCEUS_LITE_APPS[@]}${C_RESET} Apps)"
+    echo -e "${CR}${C_RED}[0] ออกจากระบบ${C_RESET}"
+    echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+    echo -ne "${CR}${C_GREEN}🎯 เลือกหมวดหมู่ที่ต้องการ (0-4): ${C_RESET}"
+    read MAIN_CHOICE
+    echo ""
 
-case $MAIN_CHOICE in
-    1)
-        process_selection "Delta" "${DELTA_APPS[@]}"
-        ;;
-    2)
-        process_selection "ArceusX lite" "${ARCEUS_APPS[@]}"
-        ;;
-    *)
-        echo -e "${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
-        ;;
-esac
+    case $MAIN_CHOICE in
+        1) process_selection "Delta" "${DELTA_APPS[@]}" ;;
+        2) process_selection "Delta lite" "${DELTA_LITE_APPS[@]}" ;;
+        3) process_selection "ArceusX" "${ARCEUS_NORMAL_APPS[@]}" ;;
+        4) process_selection "ArceusX lite" "${ARCEUS_LITE_APPS[@]}" ;;
+        0) break ;;
+        *) 
+            echo -e "${CR}${C_RED}[!] เลือกเมนูไม่ถูกต้อง กรุณาลองใหม่${C_RESET}" 
+            sleep 1
+            ;;
+    esac
+done
 
-# คืนค่าหน้าจอให้สมบูรณ์ 100% ก่อนจบการทำงาน ป้องกัน prompt (~ $) ตกขอบ
 stty sane 2>/dev/null
-echo -e "${C_CYAN}"
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
-echo -e "${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "${CR}${C_CYAN}"
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+echo -e "${CR}         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
+echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 echo ""
