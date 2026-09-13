@@ -115,7 +115,7 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (ลบหลอดสีฟ้าออกแล้ว 100%)
+# 3. ระบบติดตั้งแอป
 # ==========================================
 install_apk() {
     local NAME=$1
@@ -128,7 +128,6 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    # ใช้สปินเนอร์หมุนอยู่กับที่แทนหลอดสีฟ้ายาวยืด
     local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
     local i=0
     while kill -0 $PID 2>/dev/null; do
@@ -261,13 +260,26 @@ process_selection() {
 }
 
 DELTA_APPS=(
-  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta1.apk"
-  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta2.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.1_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.2_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.3_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.4_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.5_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.6_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.7_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.736.1408.apk"
 )
 
+# 📌 อัปเดตลิงก์ Delta Lite ใหม่ทั้ง 8 ลิงก์
 DELTA_LITE_APPS=(
-  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta_lite1.apk"
-  "https://raw.githubusercontent.com/suphawatinf/INFINITESHOP/refs/heads/main/delta_lite2.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.3_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.4_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.5_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.6_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.7_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.8_2.736.1408.apk"
 )
 
 ARCEUS_NORMAL_APPS=(
