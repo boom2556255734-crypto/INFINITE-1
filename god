@@ -111,7 +111,7 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป (แก้ไข Syntax ปลอดภัย 100%)
+# 3. ระบบติดตั้งแอป (เปลี่ยนสปินเนอร์เป็นแบบ ASCII รองรับทุกเครื่อง)
 # ==========================================
 install_apk() {
     local NAME=$1
@@ -124,8 +124,8 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    # ใช้สปินเนอร์แบบตัวอักษรปลอดภัย ไร้ปัญหา Syntax Error
-    local SPINNER=("/" "-" "+" "*")
+    # ใช้สปินเนอร์แบบขีดหมุน ASCII ป้องกันอักษรเพี้ยน 100%
+    local SPINNER=("/" "-" "\" "|")
     local i=0
     while kill -0 $PID 2>/dev/null; do
         i=$(( (i+1) % 4 ))
@@ -135,7 +135,7 @@ install_apk() {
     wait $PID
     local DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
@@ -144,6 +144,7 @@ install_apk() {
             
             echo -e "${CR} ${C_GREEN}⚡ กำลังเปิดหน้าต่างติดตั้ง:${C_RESET} $NAME ..."
             
+            # ตรวจสอบสิทธิ์ Root แบบเงียบๆ ถ้าไม่ได้ Root ให้เปิดหน้าต่างติดตั้งปกติทันทีโดยไม่พ่นข้อความ Error
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 local PM_STATUS=$?
@@ -155,6 +156,7 @@ install_apk() {
                 fi
             fi
             
+            # โหมดปกติ (Non-Root) เปิดตัวติดตั้งแพ็กเกจขึ้นมา
             termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
             stty sane 2>/dev/null
             echo -e "${CR} ${C_GREEN}✅ เปิดหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
