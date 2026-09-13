@@ -18,7 +18,6 @@ C_WHITE="\033[1;37m"
 C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
-# เส้นคั่นความกว้าง 55 ตัวอักษร (พอดีกับโลโก้เป๊ะ)
 C_DIV="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 C_SUB="───────────────────────────────────────────────────────"
 
@@ -39,9 +38,6 @@ type_text() {
     echo -e "${C_RESET}"
 }
 
-# ==========================================
-# 2. ตรวจสอบสิทธิ์และโปรแกรมเสริม
-# ==========================================
 if ! command -v curl >/dev/null 2>&1; then
     clear
     echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing curl)...${C_RESET}"
@@ -115,7 +111,7 @@ check_password() {
 }
 
 # ==========================================
-# 3. ระบบติดตั้งแอป
+# 3. ระบบติดตั้งแอป (เปลี่ยนสปินเนอร์เป็นแบบ ASCII รองรับทุกเครื่อง)
 # ==========================================
 install_apk() {
     local NAME=$1
@@ -128,10 +124,11 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     
-    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    # ใช้สปินเนอร์แบบขีดหมุน ASCII ป้องกันอักษรเพี้ยน 100%
+    local SPINNER=("/" "-" "\" "|")
     local i=0
     while kill -0 $PID 2>/dev/null; do
-        i=$(( (i+1) % 10 ))
+        i=$(( (i+1) % 4 ))
         echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${SPINNER[$i]}]${C_RESET}"
         sleep 0.1
     done
@@ -145,8 +142,9 @@ install_apk() {
         if [ "$FILE_SIZE" -gt 1024 ]; then
             chmod 777 "$TEMP_FILE" 2>/dev/null
             
-            echo -e "${CR} ${C_GREEN}⚡ กำลังดำเนินการติดตั้ง:${C_RESET} $NAME ..."
+            echo -e "${CR} ${C_GREEN}⚡ กำลังเปิดหน้าต่างติดตั้ง:${C_RESET} $NAME ..."
             
+            # ตรวจสอบสิทธิ์ Root แบบเงียบๆ ถ้าไม่ได้ Root ให้เปิดหน้าต่างติดตั้งปกติทันทีโดยไม่พ่นข้อความ Error
             if command -v su >/dev/null 2>&1 && su -c "true" >/dev/null 2>&1; then
                 su -c "pm install -r \"$TEMP_FILE\"" >/dev/null 2>&1
                 local PM_STATUS=$?
@@ -154,16 +152,14 @@ install_apk() {
                 
                 if [ $PM_STATUS -eq 0 ]; then
                     echo -e "${CR} ${C_GREEN}✅ ติดตั้งแอปเสร็จสมบูรณ์ลงในเครื่องแล้ว!${C_RESET}"
-                else
-                    echo -e "${CR} ${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว เรียกหน้าต่างปกติ...${C_RESET}"
-                    termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
-                    stty sane 2>/dev/null
+                    return
                 fi
-            else
-                termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
-                stty sane 2>/dev/null
-                echo -e "${CR} ${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
             fi
+            
+            # โหมดปกติ (Non-Root) เปิดตัวติดตั้งแพ็กเกจขึ้นมา
+            termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
+            stty sane 2>/dev/null
+            echo -e "${CR} ${C_GREEN}✅ เปิดหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
         else
             echo -e "${CR} ${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
             rm -f "$TEMP_FILE"
@@ -270,7 +266,6 @@ DELTA_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.736.1408.apk"
 )
 
-# 📌 อัปเดตลิงก์ Delta Lite ใหม่ทั้ง 8 ลิงก์
 DELTA_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.736.1408.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.736.1408.apk"
