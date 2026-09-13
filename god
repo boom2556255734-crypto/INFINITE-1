@@ -18,7 +18,8 @@ CR="\r\033[K"
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
 
-VALID_PASSWORDS=("1688" "BIG49")
+# เพิ่มรหัสผ่านใหม่ "wiwatz" เข้าไปในระบบ
+VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
 
 check_password() {
@@ -59,19 +60,17 @@ check_password() {
 install_apk() {
     local NAME=$1
     local URL=$2
-    # เปลี่ยนมาบันทึกในโฟลเดอร์หลักของ Termux แก้ปัญหาติดสิทธิ์ Storage (Permission Denied)
-    local TEMP_FILE="$HOME/temp_app.apk"
+    # ใช้งานโฟลเดอร์ Download ของเครื่อง เพื่อให้แอปติดตั้งทำงานได้
+    local TEMP_FILE="/sdcard/Download/temp_app.apk"
 
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
     echo -e "${CR}${C_YELLOW}📥 กำลังดาวน์โหลด:${C_RESET} $NAME"
     
     rm -f "$TEMP_FILE"
     
-    # รันคำสั่งโหลดไฟล์ พร้อมดักจับสถานะ (ดักไว้ 2 ชั้น curl และ wget)
     if curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE"; then
         local DL_STATUS=0
     else
-        # ถ้า curl ล้มเหลว ให้ใช้ wget เป็นแผนสำรอง
         wget -qO "$TEMP_FILE" "$URL"
         local DL_STATUS=$?
     fi
@@ -87,7 +86,6 @@ install_apk() {
             rm -f "$TEMP_FILE"
         fi
     else
-        # หากล้มเหลว จะโชว์ Error Code ให้รู้ว่าพังที่อะไร
         echo -e "${CR}${C_RED}❌ ดาวน์โหลดล้มเหลว (Error Code: $DL_STATUS)${C_RESET}"
     fi
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
