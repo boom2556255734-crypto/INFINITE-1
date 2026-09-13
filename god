@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # ==========================================
-# 1. ล้างแคชและเตรียมหน้าจอ (ดักบัคค้าง)
+# 1. ล้างแคชและเตรียมหน้าจอ
 # ==========================================
 hash -r 2>/dev/null
 stty sane 2>/dev/null
@@ -19,33 +19,32 @@ CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
-
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
 MAX_ATTEMPTS=3
 
-# ดึงข้อมูลเครื่องโชว์ความเท่ (ลูกเล่นใหม่)
-OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "Unknown")
-ARCH=$(uname -m 2>/dev/null || echo "Unknown")
-
 # ==========================================
-# 2. ระบบ Auto-Check ป้องกันบัคโปรแกรมไม่ครบ
+# 2. ฟังก์ชันลูกเล่น: พิมพ์ข้อความทีละตัวอักษร
 # ==========================================
-check_dependencies() {
-    local DEPS=("curl" "wget")
-    for DEP in "${DEPS[@]}"; do
-        if ! command -v $DEP >/dev/null 2>&1; then
-            clear
-            echo -e "${CR}${C_YELLOW}⚙️ ตรวจพบว่าระบบขาดแพ็กเกจ: ${C_WHITE}$DEP${C_RESET}"
-            echo -e "${CR}${C_CYAN}กำลังติดตั้งอัตโนมัติ กรุณารอสักครู่...${C_RESET}"
-            pkg install $DEP -y >/dev/null 2>&1
-        fi
+type_text() {
+    local text="$1"
+    local color="$2"
+    echo -ne "${CR}${color}"
+    for (( i=0; i<${#text}; i++ )); do
+        echo -ne "${text:$i:1}"
+        sleep 0.03
     done
+    echo -e "${C_RESET}"
 }
-check_dependencies
 
 # ==========================================
-# 3. เช็คสิทธิ์การเข้าถึงพื้นที่จัดเก็บข้อมูลอัตโนมัติ
+# 3. ตรวจสอบสิทธิ์และโปรแกรมเสริม
 # ==========================================
+if ! command -v wget >/dev/null 2>&1; then
+    clear
+    echo -e "${CR}${C_YELLOW}⚙️ กำลังตั้งค่าระบบพื้นฐาน (Installing wget)...${C_RESET}"
+    pkg install wget -y >/dev/null 2>&1
+fi
+
 if [ ! -d "/sdcard/Download" ] || ! touch "/sdcard/Download/.test_perm" 2>/dev/null; then
     clear
     echo -e "${CR}${C_YELLOW}⚠️ ระบบต้องการสิทธิ์เข้าถึงพื้นที่จัดเก็บข้อมูล...${C_RESET}"
@@ -54,6 +53,31 @@ if [ ! -d "/sdcard/Download" ] || ! touch "/sdcard/Download/.test_perm" 2>/dev/n
     sleep 3
 fi
 rm -f "/sdcard/Download/.test_perm" 2>/dev/null
+
+# ==========================================
+# 4. ฟังก์ชันคำนวณข้อมูลเครื่อง (Device HUD)
+# ==========================================
+get_device_info() {
+    OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "?")
+    ARCH=$(uname -m 2>/dev/null || echo "?")
+    
+    # คำนวณ RAM เป็น GB
+    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+    if [ -n "$RAM_KB" ]; then
+        RAM_GB=$(awk "BEGIN {printf \"%.1f\", $RAM_KB/1048576}")" GB"
+    else
+        RAM_GB="?"
+    fi
+    
+    # คำนวณ ROM
+    local ROM_TOTAL=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $2}')
+    local ROM_FREE=$(df -h /sdcard 2>/dev/null | awk 'NR==2 {print $4}')
+    if [ -n "$ROM_TOTAL" ]; then
+        ROM_INFO="${ROM_TOTAL} (ว่าง ${ROM_FREE})"
+    else
+        ROM_INFO="?"
+    fi
+}
 
 check_password() {
     clear
@@ -78,8 +102,9 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            echo -e "${CR}${C_GREEN}✔ รหัสผ่านถูกต้อง! กำลังเข้าสู่ระบบ...${C_RESET}"
-            sleep 1
+            type_text "✔ รหัสผ่านถูกต้อง! กำลังปลดล็อกระบบ..." "$C_GREEN"
+            sleep 0.5
+            get_device_info
             return 0
         else
             echo -e "${CR}${C_RED}❌ รหัสผ่านไม่ถูกต้อง (เหลือโอกาสอีก $((MAX_ATTEMPTS - ATTEMPTS - 1)) ครั้ง)${C_RESET}"
@@ -100,13 +125,9 @@ install_apk() {
     
     rm -f "$TEMP_FILE"
     
-    # 📌 ลูกเล่นใหม่: ใช้ curl -# เพื่อแสดงหลอดเปอร์เซ็นต์การโหลดแทนการซ่อนเงียบ
-    if curl -# -L -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE"; then
-        local DL_STATUS=0
-    else
-        wget -qO "$TEMP_FILE" "$URL"
-        local DL_STATUS=$?
-    fi
+    # ใช้ wget แทน curl เพื่อให้หลอดโหลดสวยงามและไม่ล้นจอ
+    wget -q --show-progress --progress=bar:force:noscroll -O "$TEMP_FILE" "$URL"
+    local DL_STATUS=$?
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
@@ -123,17 +144,17 @@ install_apk() {
                 if [ $PM_STATUS -eq 0 ]; then
                     echo -e "${CR}${C_GREEN}✅ ติดตั้งแอปเสร็จสมบูรณ์ลงในเครื่องแล้ว!${C_RESET}"
                 else
-                    echo -e "${CR}${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว กำลังเรียกหน้าต่างปกติ...${C_RESET}"
+                    echo -e "${CR}${C_RED}❌ ติดตั้งเบื้องหลังล้มเหลว เรียกหน้าต่างปกติ...${C_RESET}"
                     termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
                     stty sane 2>/dev/null
                 fi
             else
                 termux-open --content-type "application/vnd.android.package-archive" "$TEMP_FILE"
                 stty sane 2>/dev/null
-                echo -e "${CR}${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กรุณากด 'ติดตั้ง' บนหน้าจอ)"
+                echo -e "${CR}${C_GREEN}✅ เรียกหน้าต่างติดตั้งแล้ว:${C_RESET} (กด 'ติดตั้ง' บนจอ)"
             fi
         else
-            echo -e "${CR}${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาดแค่ ${FILE_SIZE}KB)${C_RESET}"
+            echo -e "${CR}${C_RED}❌ ไฟล์เสีย หรือลิงก์หมดอายุ (พบไฟล์ขนาด ${FILE_SIZE}KB)${C_RESET}"
             rm -f "$TEMP_FILE"
         fi
     else
@@ -160,7 +181,8 @@ process_selection() {
         done
         
         echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-        echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all (พิมพ์ 0 เพื่อกลับ)"
+        echo -e "${CR}${C_YELLOW}💡 คำแนะนำ:${C_RESET} พิมพ์ 1-${TOTAL} หรือระบุ (เช่น 1 3) หรือ all"
+        echo -e "${CR}${C_WHITE}   (พิมพ์ 0 เพื่อกลับไปหน้าเมนูหลัก)${C_RESET}"
         echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
 
         echo -ne "${CR}${C_GREEN}🎯 เลือกรายการที่ต้องการ: ${C_RESET}"
@@ -185,7 +207,7 @@ process_selection() {
                     local START=${BASH_REMATCH[1]}
                     local END=${BASH_REMATCH[2]}
                     
-                    # 📌 ลูกเล่นใหม่: ระบบ Smart Range (สลับเลขให้อัตโนมัติถ้าลูกค้าพิมพ์ผิดจากหลังมาหน้า)
+                    # สลับตัวเลขให้อัตโนมัติถ้าพิมพ์กลับหลัง (เช่น 5-1 เป็น 1-5)
                     if [ "$START" -gt "$END" ]; then
                         local TEMP_NUM=$START
                         START=$END
@@ -218,7 +240,7 @@ process_selection() {
                 install_apk "$CATEGORY_NAME $((INDEX+1))" "${APPS[$INDEX]}"
             done
             
-            echo -e "${CR}${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
+            echo -ne "${CR}${C_YELLOW}กด Enter เพื่อกลับไปหน้าเลือกแอป...${C_RESET}"
             read
         else
             echo -e "${CR}${C_RED}[!] ป้อนข้อมูลไม่ถูกต้อง กรุณาลองใหม่${C_RESET}"
@@ -259,6 +281,7 @@ ARCEUS_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/ArceusX.lite.by.Suphawat.8_2.737.1584.apk"
 )
 
+# เริ่มรันระบบ
 check_password
 
 while true; do
@@ -269,7 +292,9 @@ while true; do
     echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
     echo -e "${CR}${C_CYAN}👑 Developer :${C_RESET} $OWNER_NAME"
     echo -e "${CR}${C_CYAN}💬 Discord   :${C_RESET} $DISCORD_LINK"
-    echo -e "${CR}${C_CYAN}📱 Android   :${C_RESET} $OS_VER | ${C_YELLOW}CPU:${C_RESET} $ARCH"
+    # 📌 หน้าจอแสดงสเปคเครื่อง (Device HUD)
+    echo -e "${CR}${C_CYAN}📱 OS/CPU    :${C_RESET} Android $OS_VER | $ARCH"
+    echo -e "${CR}${C_CYAN}💾 RAM/ROM   :${C_RESET} $RAM_GB | $ROM_INFO"
     echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
     echo -e "${CR}${C_PURPLE}[1]${C_RESET} Delta        (${C_GREEN}${#DELTA_APPS[@]}${C_RESET} Apps)"
     echo -e "${CR}${C_PURPLE}[2]${C_RESET} Delta lite   (${C_GREEN}${#DELTA_LITE_APPS[@]}${C_RESET} Apps)"
@@ -295,8 +320,8 @@ while true; do
 done
 
 stty sane 2>/dev/null
-echo -e "${CR}${C_CYAN}"
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
-echo -e "${CR}         ${C_GREEN}✨ ทำงานเสร็จสิ้นเรียบร้อย! ✨${C_RESET}        "
-echo -e "${CR}${C_CYAN}------------------------------------------${C_RESET}"
+clear
+echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
+echo -e "${CR}         ${C_GREEN}✨ ออกจากระบบเรียบร้อย! ✨${C_RESET}        "
+echo -e "${CR}${C_CYAN}==========================================${C_RESET}"
 echo ""
