@@ -6,7 +6,7 @@
 hash -r 2>/dev/null
 stty sane 2>/dev/null
 
-# กำหนดรหัสสี (เพิ่มธีมสีเขียวมรกตพรีเมียม)
+# กำหนดรหัสสี
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
 C_GREEN="\033[1;32m"
@@ -82,10 +82,10 @@ get_device_info() {
 
 check_password() {
     clear
-    # เปลี่ยนกรอบและข้อความเป็นแบบพรีเมียมสีเขียวมรกต
-    echo -e "${C_EMERALD}╔════════════════════════════════════════╗${C_RESET}"
-    echo -e "${C_EMERALD}║${C_RESET}     ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}  ${C_EMERALD}║${C_RESET}"
-    echo -e "${C_EMERALD}╚════════════════════════════════════════╝${C_RESET}"
+    # ขยายความกว้างกรอบให้พอดีกับข้อความ SECURE SYSTEM AUTHENTICATION ไม่ให้ขอบล้น
+    echo -e "${C_EMERALD}╔════════════════════════════════════════════════╗${C_RESET}"
+    echo -e "${C_EMERALD}║${C_RESET}       ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}       ${C_EMERALD}║${C_RESET}"
+    echo -e "${C_EMERALD}╚════════════════════════════════════════════════╝${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
