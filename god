@@ -6,7 +6,7 @@
 hash -r 2>/dev/null
 stty sane 2>/dev/null
 
-# กำหนดรหัสสี
+# กำหนดรหัสสี (เพิ่มธีมสีเขียวมรกตพรีเมียม)
 C_RESET="\033[0m"
 C_CYAN="\033[1;36m"
 C_GREEN="\033[1;32m"
@@ -15,7 +15,7 @@ C_RED="\033[1;31m"
 C_PURPLE="\033[1;35m"
 C_BLUE="\033[1;34m"
 C_WHITE="\033[1;37m"
-C_MAGENTA="\033[1;35m"
+C_EMERALD="\033[1;92m"
 CR="\r\033[K"
 
 OWNER_NAME="Suphawat"
@@ -38,7 +38,6 @@ cyber_loader() {
     local title="$1"
     echo -ne "${CR}${C_CYAN}${title} [${C_RESET}"
     for ((j=0; j<=20; j++)); do
-        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
         echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.02
     done
@@ -64,9 +63,10 @@ get_device_info() {
     OS_VER=$(getprop ro.build.version.release 2>/dev/null || echo "?")
     ARCH=$(uname -m 2>/dev/null || echo "?")
     
-    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}')
+    local RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null || true)
     if [ -n "$RAM_KB" ]; then
-        RAM_GB=$(awk "BEGIN {printf \"%.1f\", $RAM_KB/1048576}" 2>/dev/null)" GB"
+        local mem_val=$(echo "$RAM_KB" | awk '{print $2}')
+        RAM_GB=$(awk "BEGIN {printf \"%.1f\", $mem_val/1048576}" 2>/dev/null)" GB"
     else
         RAM_GB="?"
     fi
@@ -82,13 +82,14 @@ get_device_info() {
 
 check_password() {
     clear
-    echo -e "${C_CYAN}╔════════════════════════════════════════╗${C_RESET}"
-    echo -e "${C_CYAN}║${C_RESET}        ${C_MAGENTA}⚡ CYBERNETIC LOGIN ⚡${C_RESET}          ${C_CYAN}║${C_RESET}"
-    echo -e "${C_CYAN}╚════════════════════════════════════════╝${C_RESET}"
+    # เปลี่ยนกรอบและข้อความเป็นแบบพรีเมียมสีเขียวมรกต
+    echo -e "${C_EMERALD}╔════════════════════════════════════════╗${C_RESET}"
+    echo -e "${C_EMERALD}║${C_RESET}     ${C_GREEN}⚡ SECURE SYSTEM AUTHENTICATION ⚡${C_RESET}  ${C_EMERALD}║${C_RESET}"
+    echo -e "${C_EMERALD}╚════════════════════════════════════════╝${C_RESET}"
     
     local ATTEMPTS=0
     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
-        echo -ne "${CR} ${C_GREEN}🔑 กรอกรหัสผ่านระบบ: ${C_RESET}"
+        echo -ne "${CR} ${C_EMERALD}🔑 กรอกรหัสผ่านระบบ: ${C_RESET}"
         read -s USER_PASS
         echo ""
         
@@ -103,7 +104,7 @@ check_password() {
         done
         
         if [ $IS_CORRECT -eq 1 ]; then
-            type_text " ✔ รหัสผ่านถูกต้อง! กำลังเชื่อมต่อระบบ..." "$C_GREEN"
+            type_text " ✔ รหัสผ่านถูกต้อง! กำลังเชื่อมต่อระบบ..." "$C_EMERALD"
             cyber_loader "⚡ Initializing Core"
             sleep 0.5
             get_device_info
@@ -129,7 +130,6 @@ install_apk() {
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
     local PID=$!
     while kill -0 $PID 2>/dev/null; do
-        # เปลี่ยนเป็นสีฟ้า (C_CYAN)
         echo -ne "${C_CYAN}█${C_RESET}"
         sleep 0.15
     done
@@ -293,14 +293,12 @@ check_password
 while true; do
     clear
     stty sane 2>/dev/null
-    # โลโก้ ASCII Art สีฟ้า
     echo -e "${C_CYAN} ██╗███╗   ██╗███████╗██╗███╗   ██╗██╗████████╗███████╗${C_RESET}"
     echo -e "${C_CYAN} ██║████╗  ██║██╔════╝██║████╗  ██║██║╚══██╔══╝██╔════╝${C_RESET}"
     echo -e "${C_CYAN} ██║██╔██╗ ██║█████╗  ██║██╔██╗ ██║██║   ██║   █████╗  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║   ██║   ██╔══╝  ${C_RESET}"
     echo -e "${C_CYAN} ██║██║ ╚████║██║     ██║██║ ╚████║██║   ██║   ███████╗${C_RESET}"
     echo -e "${C_CYAN} ╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚══════╝${C_RESET}"
-    # เปลี่ยนข้อความตรงนี้ตามต้องการ
     echo -e "${C_YELLOW}                  [ INFINITE SHOP v1.0 ]                ${C_RESET}"
     echo -e "${C_CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
     echo -e "  👑 ${C_WHITE}Dev${C_RESET}  : $OWNER_NAME"
