@@ -24,7 +24,6 @@ C_SUB="────────────────────────�
 
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
-# 📌 เพิ่มรหัสผ่าน fku09 เรียบร้อยแล้ว
 VALID_PASSWORDS=("1688" "BIG49" "wiwatz" "fku09")
 MAX_ATTEMPTS=3
 SCRIPT_VERSION="v1.0"
@@ -140,7 +139,8 @@ install_apk() {
     wait $PID
     DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
+    # 📌 เอาคำว่า [OK] ออกตามที่คุณขอ ให้เหลือแค่ชื่อแอปเรียบๆ
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
