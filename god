@@ -24,7 +24,8 @@ C_SUB="────────────────────────�
 
 OWNER_NAME="Suphawat"
 DISCORD_LINK="https://discord.gg/VCPAaUy46C"
-VALID_PASSWORDS=("1688" "BIG49" "wiwatz")
+# 📌 เพิ่มรหัสผ่าน fku09 เรียบร้อยแล้ว
+VALID_PASSWORDS=("1688" "BIG49" "wiwatz" "fku09")
 MAX_ATTEMPTS=3
 SCRIPT_VERSION="v1.0"
 
@@ -118,27 +119,28 @@ check_password() {
 # 3. ระบบติดตั้งแอป
 # ==========================================
 install_apk() {
-    local NAME=$1
-    local URL=$2
+    local NAME="$1"
+    local URL="$2"
     local TEMP_FILE="/sdcard/Download/temp_app.apk"
+    local PID=""
+    local DL_STATUS=0
 
     echo -e "${CR}${C_CYAN}${C_SUB}${C_RESET}"
     rm -f "$TEMP_FILE"
     
     curl -sL -A "Mozilla/5.0" "$URL" -o "$TEMP_FILE" &
-    local PID=$!
+    PID=$!
     
-    local SPINNER=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-    local i=0
+    local DOTS=""
     while kill -0 $PID 2>/dev/null; do
-        i=$(( (i+1) % 10 ))
-        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}[${SPINNER[$i]}]${C_RESET}"
-        sleep 0.1
+        if [ ${#DOTS} -ge 3 ]; then DOTS=""; else DOTS+="."; fi
+        echo -ne "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_CYAN}${DOTS}${C_RESET}"
+        sleep 0.4
     done
     wait $PID
-    local DL_STATUS=$?
+    DL_STATUS=$?
     
-    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[SUCCESS]${C_RESET}"
+    echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME ${C_GREEN}[OK]${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
         local FILE_SIZE=$(du -k "$TEMP_FILE" | cut -f1)
@@ -270,7 +272,6 @@ DELTA_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.736.1408.apk"
 )
 
-# 📌 อัปเดตลิงก์ Delta Lite ใหม่ทั้ง 8 ลิงก์
 DELTA_LITE_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.736.1408.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.736.1408.apk"
