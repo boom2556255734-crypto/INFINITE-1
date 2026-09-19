@@ -262,7 +262,7 @@ process_selection() {
 }
 
 DELTA_APPS=(
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.1_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.1_2.738.1397.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.2_2.736.1408.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.3_2.736.1408.apk"
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.4_2.736.1408.apk"
