@@ -139,7 +139,6 @@ install_apk() {
     wait $PID
     DL_STATUS=$?
     
-    # 📌 เอาคำว่า [OK] ออกตามที่คุณขอ ให้เหลือแค่ชื่อแอปเรียบๆ
     echo -e "${CR} ${C_YELLOW}📥 กำลังดาวน์โหลด: ${C_WHITE}$NAME${C_RESET}"
 
     if [ $DL_STATUS -eq 0 ] && [ -f "$TEMP_FILE" ]; then
@@ -185,7 +184,7 @@ process_selection() {
         clear
         stty sane 2>/dev/null
         echo -e "${C_CYAN}${C_DIV}${C_RESET}"
-        echo -e "               📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}"
+        echo -e "                📁 หมวดหมู่: ${C_YELLOW}$CATEGORY_NAME${C_RESET}"
         echo -e "${C_CYAN}${C_DIV}${C_RESET}"
         
         for i in "${!APPS[@]}"; do
@@ -263,24 +262,24 @@ process_selection() {
 
 DELTA_APPS=(
   "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.1_2.738.1397.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.2_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.3_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.4_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.5_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.6_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.7_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.2_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.3_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.4_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.5_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.6_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.7_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.by.Suphawat.8_2.738.1397.apk"
 )
 
 DELTA_LITE_APPS=(
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.3_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.4_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.5_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.6_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.7_2.736.1408.apk"
-  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.8_2.736.1408.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.1_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.2_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.3_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.4_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.5_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.6_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.7_2.738.1397.apk"
+  "https://github.com/suphawatinf/INFINITESHOP/releases/download/V1.0/Delta.lite.by.Suphawat.8_2.738.1397.apk"
 )
 
 ARCEUS_NORMAL_APPS=(
